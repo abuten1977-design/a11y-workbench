@@ -1,0 +1,15 @@
+[Unit]
+Description=A11y Oracle API Server
+After=network.target
+
+[Service]
+Type=simple
+User=butenhome
+WorkingDirectory=/home/butenhome/a11y-api
+Environment="PATH=/home/butenhome/a11y-api/venv/bin"
+ExecStart=/home/butenhome/a11y-api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
