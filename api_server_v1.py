@@ -137,6 +137,31 @@ async def create_issue(data: IssueCreate):
     issue_id = issues.create(data.dict())
     return {"id": issue_id, "message": "Issue created"}
 
+# Sessions
+@app.get("/api/v1/projects/{project_id}/sessions")
+async def list_sessions(project_id: str):
+    items = test_sessions.list_by_project(project_id)
+    return {"sessions": items, "total": len(items)}
+
+@app.post("/api/v1/sessions")
+async def create_session(data: dict):
+    session_id = test_sessions.create(
+        project_id=data['project_id'],
+        target_id=data.get('target_id'),
+        assistive_tech=data['assistive_tech'],
+        browser=data['browser'],
+        platform=data['platform'],
+        tester_notes=data.get('tester_notes')
+    )
+    return {"id": session_id, "message": "Session started"}
+
+@app.put("/api/v1/sessions/{session_id}/end")
+async def end_session(session_id: str):
+    success = test_sessions.end_session(session_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {"message": "Session ended"}
+
 @app.get("/api/v1/issues/{issue_id}")
 async def get_issue(issue_id: str):
     issue = issues.get(issue_id)
@@ -291,6 +316,18 @@ async def dashboard():
             <button class="btn-primary" onclick="showCreateTarget()">+ Add Target</button>
             <div id="targets-list" class="list" style="margin-top: 15px;"></div>
         </div>
+
+        <!-- Sessions Section -->
+        <div class="section hidden" id="sessions-section">
+            <h2>🧪 Test Sessions</h2>
+            <button class="btn-primary" onclick="showStartSession()">+ Start Session</button>
+            <div id="sessions-list" class="list" style="margin-top: 15px;"></div>
+            <div id="active-session" class="hidden" style="margin-top: 1rem; padding: 1rem; background: #1a3a1a; border-radius: 8px;">
+                <strong>🟢 Active Session</strong>
+                <div id="active-session-info" style="margin-top: 0.5rem; color: #888;"></div>
+                <button class="btn-secondary" onclick="endSession()" style="margin-top: 0.5rem;">End Session</button>
+            </div>
+        </div>
         
         <!-- Issues Section -->
         <div class="section hidden" id="issues-section">
@@ -351,6 +388,52 @@ async def dashboard():
             <button class="btn-danger" onclick="hideCreateTarget()">Cancel</button>
         </div>
         
+        <!-- Start Session Form -->
+        <div id="start-session-form" class="section hidden">
+            <h2>Start Test Session</h2>
+            <div class="form-group">
+                <label>Target *</label>
+                <select id="session-target-id">
+                    <option value="">Select target...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Assistive Tech *</label>
+                <select id="session-at">
+                    <option value="NVDA">NVDA</option>
+                    <option value="JAWS">JAWS</option>
+                    <option value="VoiceOver">VoiceOver</option>
+                    <option value="TalkBack">TalkBack</option>
+                    <option value="Narrator">Narrator</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Browser *</label>
+                <select id="session-browser">
+                    <option value="Chrome">Chrome</option>
+                    <option value="Firefox">Firefox</option>
+                    <option value="Edge">Edge</option>
+                    <option value="Safari">Safari</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Platform *</label>
+                <select id="session-platform">
+                    <option value="Windows 11">Windows 11</option>
+                    <option value="Windows 10">Windows 10</option>
+                    <option value="macOS">macOS</option>
+                    <option value="iOS">iOS</option>
+                    <option value="Android">Android</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="session-notes" placeholder="Optional"></textarea>
+            </div>
+            <button class="btn-success" onclick="startSession()">Start</button>
+            <button class="btn-danger" onclick="hideStartSession()">Cancel</button>
+        </div>
+        
         <!-- Create Issue Form -->
         <div id="create-issue-form" class="section hidden">
             <h2>Quick Capture Issue</h2>
@@ -379,6 +462,7 @@ async def dashboard():
     <script>
         let currentProjectId = null;
         let currentTargetId = null;
+        let activeSessionId = null;
         
         // Load projects
         async function loadProjects() {
@@ -405,8 +489,10 @@ async def dashboard():
         async function selectProject(projectId) {
             currentProjectId = projectId;
             document.getElementById('targets-section').classList.remove('hidden');
+            document.getElementById('sessions-section').classList.remove('hidden');
             document.getElementById('issues-section').classList.remove('hidden');
             loadTargets();
+            loadSessions();
             loadIssues();
         }
         
@@ -437,6 +523,46 @@ async def dashboard():
         function selectTarget(targetId) {
             currentTargetId = targetId;
             alert('Target selected! Now issues will be linked to this target.');
+        }
+        
+        // Load sessions
+        async function loadSessions() {
+            if (!currentProjectId) return;
+            
+            const res = await fetch(`/api/v1/projects/${currentProjectId}/sessions`);
+            const data = await res.json();
+            
+            const list = document.getElementById('sessions-list');
+            if (data.sessions.length === 0) {
+                list.innerHTML = '<div class="empty">No sessions yet. Start one!</div>';
+            } else {
+                list.innerHTML = data.sessions.map(s => {
+                    const status = s.completed_at ? '✅ Completed' : '🟢 Active';
+                    const duration = s.completed_at ? 
+                        `${Math.round((new Date(s.completed_at) - new Date(s.started_at)) / 60000)} min` : 
+                        'In progress';
+                    return `
+                        <div class="list-item">
+                            <div>
+                                <div class="list-item-title">${s.assistive_tech} + ${s.browser}</div>
+                                <div class="list-item-meta">${status} • ${duration} • ${s.platform}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Check for active session
+            const active = data.sessions.find(s => !s.completed_at);
+            if (active) {
+                activeSessionId = active.id;
+                document.getElementById('active-session').classList.remove('hidden');
+                document.getElementById('active-session-info').textContent = 
+                    `${active.assistive_tech} + ${active.browser} on ${active.platform}`;
+            } else {
+                activeSessionId = null;
+                document.getElementById('active-session').classList.add('hidden');
+            }
         }
         
         // Load issues
@@ -480,6 +606,28 @@ async def dashboard():
         }
         function hideCreateTarget() {
             document.getElementById('create-target-form').classList.add('hidden');
+        }
+        async function showStartSession() {
+            if (!currentProjectId) {
+                alert('Select a project first!');
+                return;
+            }
+            if (activeSessionId) {
+                alert('End current session first!');
+                return;
+            }
+            
+            // Load targets into dropdown
+            const res = await fetch(`/api/v1/projects/${currentProjectId}/targets`);
+            const data = await res.json();
+            const select = document.getElementById('session-target-id');
+            select.innerHTML = '<option value="">Select target...</option>' + 
+                data.targets.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            
+            document.getElementById('start-session-form').classList.remove('hidden');
+        }
+        function hideStartSession() {
+            document.getElementById('start-session-form').classList.add('hidden');
         }
         function showCreateIssue() {
             if (!currentProjectId) {
@@ -551,6 +699,53 @@ async def dashboard():
                 document.getElementById('target-url').value = '';
                 document.getElementById('target-notes').value = '';
                 loadTargets();
+            }
+        }
+        
+        // Start session
+        async function startSession() {
+            const targetId = document.getElementById('session-target-id').value;
+            const at = document.getElementById('session-at').value;
+            const browser = document.getElementById('session-browser').value;
+            const platform = document.getElementById('session-platform').value;
+            
+            if (!targetId) {
+                alert('Select a target!');
+                return;
+            }
+            
+            const data = {
+                project_id: currentProjectId,
+                target_id: targetId,
+                assistive_tech: at,
+                browser: browser,
+                platform: platform,
+                tester_notes: document.getElementById('session-notes').value || null
+            };
+            
+            const res = await fetch('/api/v1/sessions', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            if (res.ok) {
+                hideStartSession();
+                document.getElementById('session-notes').value = '';
+                loadSessions();
+            }
+        }
+        
+        // End session
+        async function endSession() {
+            if (!activeSessionId) return;
+            
+            const res = await fetch(`/api/v1/sessions/${activeSessionId}/end`, {
+                method: 'PUT'
+            });
+            
+            if (res.ok) {
+                loadSessions();
             }
         }
         
