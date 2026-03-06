@@ -15,7 +15,7 @@ from pathlib import Path
 app = FastAPI(
     title="A11y Oracle API",
     description="Human-validated accessibility testing",
-    version="0.2.0"
+    version="0.3.0"
 )
 
 # File-based storage
@@ -45,6 +45,18 @@ class CheckRequest(BaseModel):
 
 class CheckResult(BaseModel):
     rating: str  # "good", "issues", "critical", "skipped"
+    description: Optional[str] = None
+    element: Optional[str] = None
+    wcag_criterion: Optional[str] = None
+
+# Load WCAG criteria
+WCAG_CRITERIA = []
+try:
+    wcag_file = Path(__file__).parent / "wcag_criteria_simple.json"
+    if wcag_file.exists():
+        WCAG_CRITERIA = json.loads(wcag_file.read_text())
+except Exception as e:
+    print(f"Warning: Could not load WCAG criteria: {e}")
 
 # ============= DASHBOARD =============
 
@@ -134,6 +146,54 @@ DASHBOARD_HTML = """
         
         .hidden { display: none; }
         .empty { text-align: center; opacity: 0.5; padding: 40px; }
+        
+        /* Modal form */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            border: 2px solid #4a9eff;
+        }
+        .modal-content h2 { margin-top: 0; color: #4a9eff; }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
     </style>
 </head>
 <body>
@@ -172,6 +232,33 @@ DASHBOARD_HTML = """
                 <button class="btn-rating btn-skip" data-rating="skipped" aria-label="Пропустить, Alt+0">
                     ⏭️ Пропустить<br><small>Alt+0</small>
                 </button>
+            </div>
+        </div>
+        
+        <!-- Modal form for detailed report -->
+        <div id="report-modal" class="modal">
+            <div class="modal-content">
+                <h2>📝 Детальний звіт</h2>
+                <form id="report-form">
+                    <div class="form-group">
+                        <label for="description">Опис проблеми: *</label>
+                        <textarea id="description" required placeholder="Наприклад: Кнопка не працює з клавіатури"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="element">Елемент (опціонально):</label>
+                        <input type="text" id="element" placeholder="Наприклад: .submit-button або головна форма">
+                    </div>
+                    <div class="form-group">
+                        <label for="wcag">WCAG критерій (опціонально):</label>
+                        <select id="wcag">
+                            <option value="">-- Оберіть критерій --</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-skip" onclick="closeModal()">Скасувати</button>
+                        <button type="submit" class="btn-good">Відправити</button>
+                    </div>
+                </form>
             </div>
         </div>
         
@@ -231,15 +318,35 @@ DASHBOARD_HTML = """
             loadQueue();
         }
         
+        let pendingRating = null;
+        
         // Отправить оценку
         async function submitRating(rating) {
             if (!currentJobId) return;
             
+            // Якщо issues або critical - показати форму
+            if (rating === 'issues' || rating === 'critical') {
+                pendingRating = rating;
+                showModal();
+                return;
+            }
+            
+            // Інакше відправити просто rating
+            await sendResult(rating, null, null, null);
+        }
+        
+        // Відправити результат на сервер
+        async function sendResult(rating, description, element, wcag) {
             try {
+                const payload = { rating };
+                if (description) payload.description = description;
+                if (element) payload.element = element;
+                if (wcag) payload.wcag_criterion = wcag;
+                
                 const res = await fetch(`/api/v1/result/${currentJobId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rating })
+                    body: JSON.stringify(payload)
                 });
                 
                 if (res.ok) {
@@ -253,6 +360,7 @@ DASHBOARD_HTML = """
                     // Скрыть панель
                     document.getElementById('current-job-section').classList.add('hidden');
                     currentJobId = null;
+                    pendingRating = null;
                     
                     // Обновить очередь
                     loadQueue();
@@ -263,6 +371,49 @@ DASHBOARD_HTML = """
                 alert('❌ Ошибка: ' + err.message);
             }
         }
+        
+        // Показати модальне вікно
+        function showModal() {
+            document.getElementById('report-modal').classList.add('show');
+            document.getElementById('description').focus();
+        }
+        
+        // Закрити модальне вікно
+        function closeModal() {
+            document.getElementById('report-modal').classList.remove('show');
+            document.getElementById('report-form').reset();
+            pendingRating = null;
+        }
+        
+        // Завантажити WCAG критерії
+        async function loadWCAG() {
+            try {
+                const res = await fetch('/api/v1/wcag');
+                const data = await res.json();
+                const select = document.getElementById('wcag');
+                
+                data.criteria.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.label;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Помилка завантаження WCAG:', err);
+            }
+        }
+        
+        // Обробка форми
+        document.getElementById('report-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const description = document.getElementById('description').value;
+            const element = document.getElementById('element').value;
+            const wcag = document.getElementById('wcag').value;
+            
+            closeModal();
+            await sendResult(pendingRating, description, element, wcag);
+        });
         
         // Обработка кликов на кнопки оценки
         document.querySelectorAll('.btn-rating').forEach(btn => {
@@ -284,6 +435,7 @@ DASHBOARD_HTML = """
         
         // Загрузка при старте
         loadQueue();
+        loadWCAG();
         
         // Автообновление каждые 10 сек
         setInterval(loadQueue, 10000);
@@ -393,11 +545,19 @@ async def submit_result(job_id: str, result: CheckResult):
         "url": job["url"],
         "status": "completed",
         "rating": result.rating,
+        "description": result.description,
+        "element": result.element,
+        "wcag_criterion": result.wcag_criterion,
         "completed_at": datetime.now().isoformat()
     }
     save_results(results)
     
     return {"message": "Result submitted", "job_id": job_id}
+
+@app.get("/api/v1/wcag")
+async def get_wcag_criteria():
+    """Get WCAG criteria list for dropdown"""
+    return {"criteria": WCAG_CRITERIA}
 
 @app.delete("/api/v1/queue/{job_id}")
 async def cancel_job(job_id: str):

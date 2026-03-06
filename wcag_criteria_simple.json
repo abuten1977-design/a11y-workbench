@@ -1,0 +1,524 @@
+[
+  {
+    "id": "1.1.1",
+    "title": "Non-text Content",
+    "level": "A",
+    "label": "1.1.1 Non-text Content (A)"
+  },
+  {
+    "id": "1.2.1",
+    "title": "Audio-only and Video-only (Prerecorded)",
+    "level": "A",
+    "label": "1.2.1 Audio-only and Video-only (Prerecorded) (A)"
+  },
+  {
+    "id": "1.2.2",
+    "title": "Captions (Prerecorded)",
+    "level": "A",
+    "label": "1.2.2 Captions (Prerecorded) (A)"
+  },
+  {
+    "id": "1.2.3",
+    "title": "Audio Description or Media Alternative (Prerecorded)",
+    "level": "A",
+    "label": "1.2.3 Audio Description or Media Alternative (Prerecorded) (A)"
+  },
+  {
+    "id": "1.2.4",
+    "title": "Captions (Live)",
+    "level": "AA",
+    "label": "1.2.4 Captions (Live) (AA)"
+  },
+  {
+    "id": "1.2.5",
+    "title": "Audio Description (Prerecorded)",
+    "level": "AA",
+    "label": "1.2.5 Audio Description (Prerecorded) (AA)"
+  },
+  {
+    "id": "1.2.6",
+    "title": "Sign Language (Prerecorded)",
+    "level": "AAA",
+    "label": "1.2.6 Sign Language (Prerecorded) (AAA)"
+  },
+  {
+    "id": "1.2.7",
+    "title": "Extended Audio Description (Prerecorded)",
+    "level": "AAA",
+    "label": "1.2.7 Extended Audio Description (Prerecorded) (AAA)"
+  },
+  {
+    "id": "1.2.8",
+    "title": "Media Alternative (Prerecorded)",
+    "level": "AAA",
+    "label": "1.2.8 Media Alternative (Prerecorded) (AAA)"
+  },
+  {
+    "id": "1.2.9",
+    "title": "Audio-only (Live)",
+    "level": "AAA",
+    "label": "1.2.9 Audio-only (Live) (AAA)"
+  },
+  {
+    "id": "1.3.1",
+    "title": "Info and Relationships",
+    "level": "A",
+    "label": "1.3.1 Info and Relationships (A)"
+  },
+  {
+    "id": "1.3.2",
+    "title": "Meaningful Sequence",
+    "level": "A",
+    "label": "1.3.2 Meaningful Sequence (A)"
+  },
+  {
+    "id": "1.3.3",
+    "title": "Sensory Characteristics",
+    "level": "A",
+    "label": "1.3.3 Sensory Characteristics (A)"
+  },
+  {
+    "id": "1.3.4",
+    "title": "Orientation",
+    "level": "AA",
+    "label": "1.3.4 Orientation (AA)"
+  },
+  {
+    "id": "1.3.5",
+    "title": "Identify Input Purpose",
+    "level": "AA",
+    "label": "1.3.5 Identify Input Purpose (AA)"
+  },
+  {
+    "id": "1.3.6",
+    "title": "Identify Purpose",
+    "level": "AAA",
+    "label": "1.3.6 Identify Purpose (AAA)"
+  },
+  {
+    "id": "1.4.1",
+    "title": "Use of Color",
+    "level": "A",
+    "label": "1.4.1 Use of Color (A)"
+  },
+  {
+    "id": "1.4.2",
+    "title": "Audio Control",
+    "level": "A",
+    "label": "1.4.2 Audio Control (A)"
+  },
+  {
+    "id": "1.4.3",
+    "title": "Contrast (Minimum)",
+    "level": "AA",
+    "label": "1.4.3 Contrast (Minimum) (AA)"
+  },
+  {
+    "id": "1.4.4",
+    "title": "Resize text",
+    "level": "AA",
+    "label": "1.4.4 Resize text (AA)"
+  },
+  {
+    "id": "1.4.5",
+    "title": "Images of Text",
+    "level": "AA",
+    "label": "1.4.5 Images of Text (AA)"
+  },
+  {
+    "id": "1.4.6",
+    "title": "Contrast (Enhanced)",
+    "level": "AAA",
+    "label": "1.4.6 Contrast (Enhanced) (AAA)"
+  },
+  {
+    "id": "1.4.7",
+    "title": "Low or No Background Audio",
+    "level": "AAA",
+    "label": "1.4.7 Low or No Background Audio (AAA)"
+  },
+  {
+    "id": "1.4.8",
+    "title": "Visual Presentation",
+    "level": "AAA",
+    "label": "1.4.8 Visual Presentation (AAA)"
+  },
+  {
+    "id": "1.4.9",
+    "title": "Images of Text (No Exception)",
+    "level": "AAA",
+    "label": "1.4.9 Images of Text (No Exception) (AAA)"
+  },
+  {
+    "id": "1.4.10",
+    "title": "Reflow",
+    "level": "AA",
+    "label": "1.4.10 Reflow (AA)"
+  },
+  {
+    "id": "1.4.11",
+    "title": "Non-text Contrast",
+    "level": "AA",
+    "label": "1.4.11 Non-text Contrast (AA)"
+  },
+  {
+    "id": "1.4.12",
+    "title": "Text Spacing",
+    "level": "AA",
+    "label": "1.4.12 Text Spacing (AA)"
+  },
+  {
+    "id": "1.4.13",
+    "title": "Content on Hover or Focus",
+    "level": "AA",
+    "label": "1.4.13 Content on Hover or Focus (AA)"
+  },
+  {
+    "id": "2.1.1",
+    "title": "Keyboard",
+    "level": "A",
+    "label": "2.1.1 Keyboard (A)"
+  },
+  {
+    "id": "2.1.2",
+    "title": "No Keyboard Trap",
+    "level": "A",
+    "label": "2.1.2 No Keyboard Trap (A)"
+  },
+  {
+    "id": "2.1.3",
+    "title": "Keyboard (No Exception)",
+    "level": "AAA",
+    "label": "2.1.3 Keyboard (No Exception) (AAA)"
+  },
+  {
+    "id": "2.1.4",
+    "title": "Character Key Shortcuts",
+    "level": "A",
+    "label": "2.1.4 Character Key Shortcuts (A)"
+  },
+  {
+    "id": "2.2.1",
+    "title": "Timing Adjustable",
+    "level": "A",
+    "label": "2.2.1 Timing Adjustable (A)"
+  },
+  {
+    "id": "2.2.2",
+    "title": "Pause, Stop, Hide",
+    "level": "A",
+    "label": "2.2.2 Pause, Stop, Hide (A)"
+  },
+  {
+    "id": "2.2.3",
+    "title": "No Timing",
+    "level": "AAA",
+    "label": "2.2.3 No Timing (AAA)"
+  },
+  {
+    "id": "2.2.4",
+    "title": "Interruptions",
+    "level": "AAA",
+    "label": "2.2.4 Interruptions (AAA)"
+  },
+  {
+    "id": "2.2.5",
+    "title": "Re-authenticating",
+    "level": "AAA",
+    "label": "2.2.5 Re-authenticating (AAA)"
+  },
+  {
+    "id": "2.2.6",
+    "title": "Timeouts",
+    "level": "AAA",
+    "label": "2.2.6 Timeouts (AAA)"
+  },
+  {
+    "id": "2.3.1",
+    "title": "Three Flashes or Below Threshold",
+    "level": "A",
+    "label": "2.3.1 Three Flashes or Below Threshold (A)"
+  },
+  {
+    "id": "2.3.2",
+    "title": "Three Flashes",
+    "level": "AAA",
+    "label": "2.3.2 Three Flashes (AAA)"
+  },
+  {
+    "id": "2.3.3",
+    "title": "Animation from Interactions",
+    "level": "AAA",
+    "label": "2.3.3 Animation from Interactions (AAA)"
+  },
+  {
+    "id": "2.4.1",
+    "title": "Bypass Blocks",
+    "level": "A",
+    "label": "2.4.1 Bypass Blocks (A)"
+  },
+  {
+    "id": "2.4.2",
+    "title": "Page Titled",
+    "level": "A",
+    "label": "2.4.2 Page Titled (A)"
+  },
+  {
+    "id": "2.4.3",
+    "title": "Focus Order",
+    "level": "A",
+    "label": "2.4.3 Focus Order (A)"
+  },
+  {
+    "id": "2.4.4",
+    "title": "Link Purpose (In Context)",
+    "level": "A",
+    "label": "2.4.4 Link Purpose (In Context) (A)"
+  },
+  {
+    "id": "2.4.5",
+    "title": "Multiple Ways",
+    "level": "AA",
+    "label": "2.4.5 Multiple Ways (AA)"
+  },
+  {
+    "id": "2.4.6",
+    "title": "Headings and Labels",
+    "level": "AA",
+    "label": "2.4.6 Headings and Labels (AA)"
+  },
+  {
+    "id": "2.4.7",
+    "title": "Focus Visible",
+    "level": "AA",
+    "label": "2.4.7 Focus Visible (AA)"
+  },
+  {
+    "id": "2.4.8",
+    "title": "Location",
+    "level": "AAA",
+    "label": "2.4.8 Location (AAA)"
+  },
+  {
+    "id": "2.4.9",
+    "title": "Link Purpose (Link Only)",
+    "level": "AAA",
+    "label": "2.4.9 Link Purpose (Link Only) (AAA)"
+  },
+  {
+    "id": "2.4.10",
+    "title": "Section Headings",
+    "level": "AAA",
+    "label": "2.4.10 Section Headings (AAA)"
+  },
+  {
+    "id": "2.4.11",
+    "title": "Focus Not Obscured (Minimum)",
+    "level": "AA",
+    "label": "2.4.11 Focus Not Obscured (Minimum) (AA)"
+  },
+  {
+    "id": "2.4.12",
+    "title": "Focus Not Obscured (Enhanced)",
+    "level": "AAA",
+    "label": "2.4.12 Focus Not Obscured (Enhanced) (AAA)"
+  },
+  {
+    "id": "2.4.13",
+    "title": "Focus Appearance",
+    "level": "AAA",
+    "label": "2.4.13 Focus Appearance (AAA)"
+  },
+  {
+    "id": "2.5.1",
+    "title": "Pointer Gestures",
+    "level": "A",
+    "label": "2.5.1 Pointer Gestures (A)"
+  },
+  {
+    "id": "2.5.2",
+    "title": "Pointer Cancellation",
+    "level": "A",
+    "label": "2.5.2 Pointer Cancellation (A)"
+  },
+  {
+    "id": "2.5.3",
+    "title": "Label in Name",
+    "level": "A",
+    "label": "2.5.3 Label in Name (A)"
+  },
+  {
+    "id": "2.5.4",
+    "title": "Motion Actuation",
+    "level": "A",
+    "label": "2.5.4 Motion Actuation (A)"
+  },
+  {
+    "id": "2.5.5",
+    "title": "Target Size",
+    "level": "AAA",
+    "label": "2.5.5 Target Size (AAA)"
+  },
+  {
+    "id": "2.5.6",
+    "title": "Concurrent Input Mechanisms",
+    "level": "AAA",
+    "label": "2.5.6 Concurrent Input Mechanisms (AAA)"
+  },
+  {
+    "id": "2.5.7",
+    "title": "Dragging Movements",
+    "level": "AA",
+    "label": "2.5.7 Dragging Movements (AA)"
+  },
+  {
+    "id": "2.5.8",
+    "title": "Target Size (Minimum)",
+    "level": "AA",
+    "label": "2.5.8 Target Size (Minimum) (AA)"
+  },
+  {
+    "id": "3.1.1",
+    "title": "Language of Page",
+    "level": "A",
+    "label": "3.1.1 Language of Page (A)"
+  },
+  {
+    "id": "3.1.2",
+    "title": "Language of Parts",
+    "level": "AA",
+    "label": "3.1.2 Language of Parts (AA)"
+  },
+  {
+    "id": "3.1.3",
+    "title": "Unusual Words",
+    "level": "AAA",
+    "label": "3.1.3 Unusual Words (AAA)"
+  },
+  {
+    "id": "3.1.4",
+    "title": "Abbreviations",
+    "level": "AAA",
+    "label": "3.1.4 Abbreviations (AAA)"
+  },
+  {
+    "id": "3.1.5",
+    "title": "Reading Level",
+    "level": "AAA",
+    "label": "3.1.5 Reading Level (AAA)"
+  },
+  {
+    "id": "3.1.6",
+    "title": "Pronunciation",
+    "level": "AAA",
+    "label": "3.1.6 Pronunciation (AAA)"
+  },
+  {
+    "id": "3.2.1",
+    "title": "On Focus",
+    "level": "A",
+    "label": "3.2.1 On Focus (A)"
+  },
+  {
+    "id": "3.2.2",
+    "title": "On Input",
+    "level": "A",
+    "label": "3.2.2 On Input (A)"
+  },
+  {
+    "id": "3.2.3",
+    "title": "Consistent Navigation",
+    "level": "AA",
+    "label": "3.2.3 Consistent Navigation (AA)"
+  },
+  {
+    "id": "3.2.4",
+    "title": "Consistent Identification",
+    "level": "AA",
+    "label": "3.2.4 Consistent Identification (AA)"
+  },
+  {
+    "id": "3.2.5",
+    "title": "Change on Request",
+    "level": "AAA",
+    "label": "3.2.5 Change on Request (AAA)"
+  },
+  {
+    "id": "3.2.6",
+    "title": "Consistent Help",
+    "level": "A",
+    "label": "3.2.6 Consistent Help (A)"
+  },
+  {
+    "id": "3.3.1",
+    "title": "Error Identification",
+    "level": "A",
+    "label": "3.3.1 Error Identification (A)"
+  },
+  {
+    "id": "3.3.2",
+    "title": "Labels or Instructions",
+    "level": "A",
+    "label": "3.3.2 Labels or Instructions (A)"
+  },
+  {
+    "id": "3.3.3",
+    "title": "Error Suggestion",
+    "level": "AA",
+    "label": "3.3.3 Error Suggestion (AA)"
+  },
+  {
+    "id": "3.3.4",
+    "title": "Error Prevention (Legal, Financial, Data)",
+    "level": "AA",
+    "label": "3.3.4 Error Prevention (Legal, Financial, Data) (AA)"
+  },
+  {
+    "id": "3.3.5",
+    "title": "Help",
+    "level": "AAA",
+    "label": "3.3.5 Help (AAA)"
+  },
+  {
+    "id": "3.3.6",
+    "title": "Error Prevention (All)",
+    "level": "AAA",
+    "label": "3.3.6 Error Prevention (All) (AAA)"
+  },
+  {
+    "id": "3.3.7",
+    "title": "Redundant Entry",
+    "level": "A",
+    "label": "3.3.7 Redundant Entry (A)"
+  },
+  {
+    "id": "3.3.8",
+    "title": "Accessible Authentication (Minimum)",
+    "level": "AA",
+    "label": "3.3.8 Accessible Authentication (Minimum) (AA)"
+  },
+  {
+    "id": "3.3.9",
+    "title": "Accessible Authentication (Enhanced)",
+    "level": "AAA",
+    "label": "3.3.9 Accessible Authentication (Enhanced) (AAA)"
+  },
+  {
+    "id": "4.1.1",
+    "title": "Parsing",
+    "level": "A",
+    "label": "4.1.1 Parsing (A)"
+  },
+  {
+    "id": "4.1.2",
+    "title": "Name, Role, Value",
+    "level": "A",
+    "label": "4.1.2 Name, Role, Value (A)"
+  },
+  {
+    "id": "4.1.3",
+    "title": "Status Messages",
+    "level": "AA",
+    "label": "4.1.3 Status Messages (AA)"
+  }
+]
