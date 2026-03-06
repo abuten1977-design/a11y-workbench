@@ -285,8 +285,15 @@ async def dashboard():
             <div id="projects-list" class="list" style="margin-top: 15px;"></div>
         </div>
         
+        <!-- Targets Section -->
+        <div class="section hidden" id="targets-section">
+            <h2>🎯 Targets / Pages</h2>
+            <button class="btn-primary" onclick="showCreateTarget()">+ Add Target</button>
+            <div id="targets-list" class="list" style="margin-top: 15px;"></div>
+        </div>
+        
         <!-- Issues Section -->
-        <div class="section" id="issues-section" class="hidden">
+        <div class="section hidden" id="issues-section">
             <h2>🐛 Issues</h2>
             <button class="btn-success" onclick="showCreateIssue()">+ Quick Capture</button>
             <div id="issues-list" class="list" style="margin-top: 15px;"></div>
@@ -309,6 +316,39 @@ async def dashboard():
             </div>
             <button class="btn-success" onclick="createProject()">Create</button>
             <button class="btn-danger" onclick="hideCreateProject()">Cancel</button>
+        </div>
+        
+        <!-- Create Target Form -->
+        <div id="create-target-form" class="section hidden">
+            <h2>Add Target / Page</h2>
+            <div class="form-group">
+                <label>Name *</label>
+                <input type="text" id="target-name" placeholder="e.g., Checkout Page">
+            </div>
+            <div class="form-group">
+                <label>URL *</label>
+                <input type="text" id="target-url" placeholder="https://example.com/checkout">
+            </div>
+            <div class="form-group">
+                <label>Flow Type</label>
+                <select id="target-flow-type">
+                    <option value="page">Page</option>
+                    <option value="form">Form</option>
+                    <option value="checkout">Checkout</option>
+                    <option value="auth">Auth (Login/Signup)</option>
+                    <option value="menu">Menu</option>
+                    <option value="modal">Modal</option>
+                    <option value="search">Search</option>
+                    <option value="table">Table</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="target-notes" placeholder="Optional"></textarea>
+            </div>
+            <button class="btn-success" onclick="createTarget()">Create</button>
+            <button class="btn-danger" onclick="hideCreateTarget()">Cancel</button>
         </div>
         
         <!-- Create Issue Form -->
@@ -338,6 +378,7 @@ async def dashboard():
 
     <script>
         let currentProjectId = null;
+        let currentTargetId = null;
         
         // Load projects
         async function loadProjects() {
@@ -363,8 +404,39 @@ async def dashboard():
         // Select project
         async function selectProject(projectId) {
             currentProjectId = projectId;
+            document.getElementById('targets-section').classList.remove('hidden');
             document.getElementById('issues-section').classList.remove('hidden');
+            loadTargets();
             loadIssues();
+        }
+        
+        // Load targets
+        async function loadTargets() {
+            if (!currentProjectId) return;
+            
+            const res = await fetch(`/api/v1/projects/${currentProjectId}/targets`);
+            const data = await res.json();
+            
+            const list = document.getElementById('targets-list');
+            if (data.targets.length === 0) {
+                list.innerHTML = '<div class="empty">No targets yet. Add one!</div>';
+            } else {
+                list.innerHTML = data.targets.map(t => `
+                    <div class="list-item">
+                        <div>
+                            <div class="list-item-title">${t.name}</div>
+                            <div class="list-item-meta">${t.url} • ${t.flow_type}</div>
+                        </div>
+                        <button class="btn-primary" onclick="selectTarget('${t.id}')">Select</button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Select target
+        function selectTarget(targetId) {
+            currentTargetId = targetId;
+            alert('Target selected! Now issues will be linked to this target.');
         }
         
         // Load issues
@@ -398,6 +470,16 @@ async def dashboard():
         }
         function hideCreateProject() {
             document.getElementById('create-project-form').classList.add('hidden');
+        }
+        function showCreateTarget() {
+            if (!currentProjectId) {
+                alert('Select a project first!');
+                return;
+            }
+            document.getElementById('create-target-form').classList.remove('hidden');
+        }
+        function hideCreateTarget() {
+            document.getElementById('create-target-form').classList.add('hidden');
         }
         function showCreateIssue() {
             if (!currentProjectId) {
@@ -439,6 +521,39 @@ async def dashboard():
             }
         }
         
+        // Create target
+        async function createTarget() {
+            const name = document.getElementById('target-name').value;
+            const url = document.getElementById('target-url').value;
+            
+            if (!name || !url) {
+                alert('Name and URL required!');
+                return;
+            }
+            
+            const data = {
+                project_id: currentProjectId,
+                name,
+                url,
+                flow_type: document.getElementById('target-flow-type').value,
+                notes: document.getElementById('target-notes').value || null
+            };
+            
+            const res = await fetch('/api/v1/targets', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            if (res.ok) {
+                hideCreateTarget();
+                document.getElementById('target-name').value = '';
+                document.getElementById('target-url').value = '';
+                document.getElementById('target-notes').value = '';
+                loadTargets();
+            }
+        }
+        
         // Create issue
         async function createIssue() {
             const title = document.getElementById('issue-title').value;
@@ -449,6 +564,7 @@ async def dashboard():
             
             const data = {
                 project_id: currentProjectId,
+                target_id: currentTargetId,
                 title,
                 raw_note: document.getElementById('issue-note').value || null,
                 severity: document.getElementById('issue-severity').value
