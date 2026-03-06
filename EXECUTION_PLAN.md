@@ -60,6 +60,7 @@
 - confidence (exact/probable/needs_review)
 - affected_element, wcag_criterion, suggested_fix
 - tags (keyboard, screen-reader, forms, navigation, modal, aria, semantics, focus)
+- source_type (manual/checklist/ai_draft/imported) - НОВЕ!
 - status (new/confirmed/reported/fixed_pending_retest/retest_passed/retest_failed)
 - created_at, updated_at
 
@@ -73,9 +74,11 @@
 **Checklist** (чеклісти тестування) - НОВЕ!
 - id, name, category, items (JSON array)
 - Приклад категорій: Navigation, Forms, Buttons, ARIA, Focus, Semantics
+- Items format: `[{"key": "form_label_association", "label": "All inputs have associated labels"}, ...]`
 
-**ChecklistResult** (результати чеклістів) - НОВЕ!
-- id, session_id, checklist_id, item_id, status (pass/fail/not_applicable), notes
+**ChecklistResult** (результати чеклістів) - НОВЕ! СПРОЩЕНО!
+- id, session_id, checklist_id, item_key, item_label, status (pass/fail/not_applicable), notes
+- Приклад: item_key="form_label_association", item_label="All inputs have labels", status="fail"
 
 ---
 
@@ -204,12 +207,18 @@ Project
 5. ✅ Portfolio mode (anonymize)
 6. ✅ Sample reports для портфоліо
 7. ✅ Statistics dashboard (НОВЕ!)
+8. ⏳ DOCX export (ОПЦІОНАЛЬНО, пізніше)
+
+**Пріоритет експортів для MVP:**
+- ✅ **Обов'язково:** Markdown, JSON, CSV
+- ⏳ **Опціонально пізніше:** DOCX
 
 **Statistics для портфоліо:**
 - Projects tested
 - Issues found (total, by severity)
 - Critical issues resolved
-- WCAG coverage (які критерії найчастіше)
+- **WCAG criteria referenced in findings** (замість "coverage")
+- **WCAG issue distribution** (які критерії найчастіше)
 - Average issues per page
 - Most common issue types
 - Evidence collected
@@ -230,12 +239,13 @@ Project
 - Summary of findings **з statistics**
 - Issue counts by severity
 - **FindingGroups breakdown**
+- **WCAG criteria referenced in findings** (не "coverage"!)
 - Key blockers
 - Recommended next steps
-- **WCAG coverage chart**
 
 **Результат:**
-- Експорт у 3+ форматах
+- Експорт у 3 форматах (Markdown, JSON, CSV)
+- DOCX опціонально пізніше
 - Готові sample reports
 - Portfolio assets
 - **Statistics dashboard для демонстрації експертизи**
@@ -550,28 +560,32 @@ Project
 ### Dashboard Statistics:
 - **Projects:** Total tested, active, completed
 - **Issues:** Total found, by severity (critical/serious/moderate/minor)
-- **WCAG Coverage:** Which criteria most violated
+- **WCAG criteria referenced in findings** (не "coverage"!)
+- **WCAG issue distribution** (які критерії найчастіше зустрічаються)
 - **Average issues per page/flow**
 - **Most common issue types** (з tags)
 - **Evidence collected:** Screen reader outputs, code snippets
 - **Resolution rate:** Fixed vs pending
 - **Retest success rate**
+- **Issue sources:** Manual vs checklist vs AI-assisted
 
 ### Portfolio Metrics (для роботодавців):
 - "Tested 15+ projects"
 - "Found 200+ accessibility issues"
 - "85% critical issues resolved"
-- "WCAG 2.2 AA compliance expert"
+- "WCAG 2.2 AA specialist"
 - "Specialized in form accessibility and ARIA"
+- "Issues referenced 35 different WCAG criteria"
 
 ### Export для CV:
 ```
 Accessibility Testing Portfolio
 - Projects audited: 15
 - Critical issues identified: 45
-- WCAG criteria covered: 35/50 (Level A/AA)
+- WCAG criteria encountered: 1.3.1, 2.4.3, 4.1.2, and 32 others
 - Most common findings: Form labels (18%), Focus management (15%), ARIA (12%)
 - Tools: NVDA, WCAG 2.2, AI-assisted reporting
+- Evidence: 150+ screen reader outputs documented
 ```
 
 ---
@@ -614,11 +628,13 @@ Accessibility Testing Portfolio
 - JSON/CSV export
 - Client summary з statistics
 - Developer report з evidence
+- DOCX опціонально (не для MVP!)
 
 ### Крок 8: Statistics Dashboard (2-3 дні) 🆕
 - Метрики проектів
-- WCAG coverage
+- WCAG criteria referenced (не coverage!)
 - Issue breakdown
+- Issue sources (manual/checklist/AI)
 - Portfolio export
 
 ### Крок 9: Templates (1-2 дні)
@@ -660,55 +676,39 @@ Accessibility Testing Portfolio
 
 ---
 
-## ✅ ЧЕКАЮ ЗАТВЕРДЖЕННЯ (ОНОВЛЕНО!)
+## ✅ ФІНАЛЬНЕ ЗАТВЕРДЖЕННЯ
 
-**ПЛАН МОДЕРНІЗОВАНО З ПРАВКАМИ:**
+**ПЛАН ГОТОВИЙ ДО СТАРТУ!**
 
-### Додано:
-1. ✅ **FindingGroup** - організація issues в групи
-2. ✅ **Evidence** - докази (screen reader output, код)
-3. ✅ **Tags** - для фільтрації issues
-4. ✅ **Checklist System** - структуроване тестування (Phase 2.5)
-5. ✅ **Statistics Dashboard** - метрики для портфоліо
-6. ✅ **Реалістичні терміни** - 3-4 тижні замість 3 тижнів
-7. ✅ **Спрощений AI** - тільки 3 функції (structure, template, WCAG)
+### Останні правки внесено:
 
-### Оновлена архітектура:
-```
-Project
-  └ Target / Flow
-       └ TestSession
-            └ FindingGroup (НОВЕ!)
-                 └ Issue
-                      └ Evidence (НОВЕ!)
-                      └ Tags (НОВЕ!)
-       └ ChecklistResult (НОВЕ!)
+1. ✅ **ChecklistResult спрощено** - item_key + item_label (без окремої таблиці ChecklistItem)
+2. ✅ **DOCX відкладено** - MVP: тільки Markdown, JSON, CSV
+3. ✅ **"WCAG coverage" замінено** на "WCAG criteria referenced in findings"
+4. ✅ **issue.source_type додано** - manual/checklist/ai_draft/imported
 
-Додатково:
-- Templates
-- Checklists (НОВЕ!)
-- Exports
-- AI assistant (спрощений)
-- Statistics (НОВЕ!)
-```
+### Що НЕ робимо зараз (щоб не зірватись):
+- ❌ Multi-user
+- ❌ Billing
+- ❌ RBAC
+- ❌ Jira integration
+- ❌ Складна AI-логіка
+- ❌ "Ідеальна" аналітика
 
 ### Оцінка плану:
-**БУЛО:** 8.5/10  
-**СТАЛО:** 9.5/10 ✅
+**ФІНАЛЬНА:** 9.5/10 ✅
 
-**Питання для підтвердження:**
-1. Чи згоден з усіма правками?
-2. Чи є додаткові корекції?
-3. Чи можу починати виконання?
+**Готовий починати Phase 1:**
+1. Оновити DATA_MODEL.md
+2. Оновити ROADMAP.md
+3. Оновити BIG_PICTURE.md
+4. Оновити ARCHITECTURE.md
+5. Почати SQLite + migration
 
-**Після затвердження:**
-- Почну з оновлення документації (ROADMAP, BIG_PICTURE, ARCHITECTURE, DATA_MODEL)
-- Потім SQLite + нова модель даних
-- Потім project workflow
-- Буду звітувати після кожного етапу
+**Чекаю команди START! 🚀**
 
 ---
 
-**Статус:** 🟡 Чекає затвердження (з правками)  
-**Наступний крок:** Оновлення документації після підтвердження  
+**Статус:** 🟢 Готовий до старту  
+**Наступний крок:** Оновлення документації → Phase 1  
 **Загальний час:** 3-4 тижні (реалістично)
