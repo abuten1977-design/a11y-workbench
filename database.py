@@ -1,43 +1,68 @@
 """
-Database connection and utilities
+Database connection management
 """
 import sqlite3
 from pathlib import Path
 from typing import Optional
 from contextlib import contextmanager
 
-# Database path
-DB_PATH = Path(__file__).parent / "data.db"
+# Default database path
+DEFAULT_DB_PATH = Path(__file__).parent / "data.db"
 
 
-def get_connection() -> sqlite3.Connection:
-    """Get database connection"""
-    conn = sqlite3.connect(str(DB_PATH))
-    conn.row_factory = sqlite3.Row  # Access columns by name
-    return conn
-
-
-@contextmanager
-def get_db():
-    """Context manager for database connection"""
-    conn = get_connection()
-    try:
-        yield conn
+class Database:
+    """Database connection manager"""
+    
+    def __init__(self, db_path: Optional[Path] = None):
+        self.db_path = db_path or DEFAULT_DB_PATH
+        self._conn: Optional[sqlite3.Connection] = None
+    
+    def connect(self) -> sqlite3.Connection:
+        """Get or create connection"""
+        if self._conn is None:
+            self._conn = sqlite3.connect(str(self.db_path))
+            self._conn.row_factory = sqlite3.Row  # Access columns by name
+        return self._conn
+    
+    def close(self):
+        """Close connection"""
+        if self._conn:
+            self._conn.close()
+            self._conn = None
+    
+    @contextmanager
+    def transaction(self):
+        """Transaction context manager"""
+        conn = self.connect()
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+    
+    def execute(self, query: str, params: tuple = ()):
+        """Execute query"""
+        conn = self.connect()
+        cursor = conn.cursor()
+        cursor.execute(query, params)
         conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
+        return cursor
+    
+    def fetchone(self, query: str, params: tuple = ()):
+        """Fetch one row"""
+        conn = self.connect()
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        return cursor.fetchone()
+    
+    def fetchall(self, query: str, params: tuple = ()):
+        """Fetch all rows"""
+        conn = self.connect()
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        return cursor.fetchall()
 
 
-def init_db(schema_path: Optional[Path] = None):
-    """Initialize database with schema"""
-    if schema_path is None:
-        schema_path = Path(__file__).parent / "schema.sql"
-    
-    with open(schema_path, 'r') as f:
-        schema = f.read()
-    
-    with get_db() as conn:
-        conn.executescript(schema)
+# Global database instance
+db = Database()
