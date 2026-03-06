@@ -243,9 +243,12 @@ DASHBOARD_HTML = """
                 });
                 
                 if (res.ok) {
-                    completedCount++;
-                    document.getElementById('stat-completed').textContent = completedCount;
-                    document.getElementById('stat-earned').textContent = '$' + (completedCount * 5);
+                    // Платимо тільки за реальні тести, не за skip
+                    if (rating !== 'skipped') {
+                        completedCount++;
+                        document.getElementById('stat-completed').textContent = completedCount;
+                        document.getElementById('stat-earned').textContent = '$' + (completedCount * 5);
+                    }
                     
                     // Скрыть панель
                     document.getElementById('current-job-section').classList.add('hidden');
