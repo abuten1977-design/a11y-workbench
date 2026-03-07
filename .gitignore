@@ -44,3 +44,26 @@ why_server_needed.md
 plan_4_weeks.md
 analiz_rynka_realnost.md
 day1_instructions.md
+plan_zarobotka.md
+
+# Personal documentation
+CAREER_STRATEGY.md
+REGISTRATION_PLAN.md
+SERVICES.md
+DASHBOARD_TEST.md
+CODING_RULES.md
+RULES_QUICK.md
+QUEUE_MANAGEMENT.md
+QUICK_SUMMARY.md
+TEST.md
+BUG_FIX_REPORT.md
+PROJECT_STATUS.md
+EXECUTION_PLAN.md
+
+# Worker documentation (internal)
+WORKER_*.md
+WSL2_SETUP.md
+WINDOWS_INSTALL.md
+
+# Old files
+README_OLD.md
