@@ -79,7 +79,7 @@ pip install -r requirements.txt
 python migrate.py
 
 # Run server
-python api_server_v2.py
+python api_server_v1.py
 ```
 
 ### Access Dashboard
@@ -94,8 +94,7 @@ http://localhost:8000
 - [Architecture](ARCHITECTURE.md) - System design and components
 - [Data Model](DATA_MODEL.md) - Database schema and entities
 - [Roadmap](ROADMAP.md) - Development plan and phases
-- [Services](SERVICES.md) - Offered accessibility testing services
-- [Career Strategy](CAREER_STRATEGY.md) - How this supports accessibility career
+- [Big Picture](BIG_PICTURE.md) - Project vision and goals
 
 ---
 
