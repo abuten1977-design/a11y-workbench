@@ -93,11 +93,17 @@ python api_server_v1.py
 http://localhost:8000
 ```
 
+### Run Tests
+```bash
+pytest tests/ -v
+```
+
 ---
 
 ## 📖 Documentation
 
 - [Architecture](ARCHITECTURE.md) - System design and components
+- [Testing](TESTING.md) - Automated test suite
 - [Data Model](DATA_MODEL.md) - Database schema and entities
 - [Roadmap](ROADMAP.md) - Development plan and phases
 - [Big Picture](BIG_PICTURE.md) - Project vision and goals
