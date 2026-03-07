@@ -41,11 +41,20 @@ class TargetCreate(BaseModel):
 class IssueCreate(BaseModel):
     project_id: str
     target_id: Optional[str] = None
+    session_id: Optional[str] = None
     finding_group_id: Optional[str] = None
     title: str
     raw_note: Optional[str] = None
     description: Optional[str] = None
+    steps_to_reproduce: Optional[str] = None
+    observed_behavior: Optional[str] = None
+    expected_behavior: Optional[str] = None
+    user_impact: Optional[str] = None
     severity: str = "moderate"
+    confidence: Optional[str] = None
+    affected_element: Optional[str] = None
+    wcag_criterion: Optional[str] = None
+    suggested_fix: Optional[str] = None
     source_type: str = "manual"
     status: str = "new"
 
@@ -232,6 +241,17 @@ async def list_evidence(issue_id: str):
     items = evidence.list_by_issue(issue_id)
     return {"evidence": items, "total": len(items)}
 
+# WCAG
+@app.get("/wcag_criteria_simple.json")
+async def get_wcag():
+    """Serve WCAG criteria JSON"""
+    import json
+    from pathlib import Path
+    wcag_file = Path(__file__).parent / "wcag_criteria_simple.json"
+    if wcag_file.exists():
+        return JSONResponse(content=json.loads(wcag_file.read_text()))
+    return JSONResponse(content=[])
+
 # ============= DASHBOARD =============
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -366,6 +386,7 @@ async def dashboard():
         <div class="section hidden" id="issues-section">
             <h2>🐛 Issues</h2>
             <button class="btn-success" onclick="showCreateIssue()">+ Quick Capture</button>
+            <button class="btn-primary" onclick="showDetailedIssue()" style="margin-left: 10px;">+ Detailed Issue</button>
             <div id="issues-list" class="list" style="margin-top: 15px;"></div>
         </div>
         
@@ -525,12 +546,87 @@ async def dashboard():
             <button class="btn-success" onclick="createIssue()">Create</button>
             <button class="btn-danger" onclick="hideCreateIssue()">Cancel</button>
         </div>
+        
+        <!-- Detailed Issue Form -->
+        <div id="detailed-issue-form" class="section hidden">
+            <h2>Detailed Issue Report</h2>
+            <div class="form-group">
+                <label>Group (optional)</label>
+                <select id="detailed-group-id">
+                    <option value="">No group</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="detailed-title" placeholder="e.g., Submit button not keyboard accessible">
+            </div>
+            <div class="form-group">
+                <label>Steps to Reproduce</label>
+                <textarea id="detailed-steps" placeholder="1. Navigate to checkout page&#10;2. Tab through form fields&#10;3. Try to reach submit button"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Observed Behavior</label>
+                <textarea id="detailed-observed" placeholder="What actually happens"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Expected Behavior</label>
+                <textarea id="detailed-expected" placeholder="What should happen"></textarea>
+            </div>
+            <div class="form-group">
+                <label>User Impact</label>
+                <textarea id="detailed-impact" placeholder="How this affects users with disabilities"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Affected Element</label>
+                <input type="text" id="detailed-element" placeholder="e.g., .submit-btn or main form">
+            </div>
+            <div class="form-group">
+                <label>WCAG Criterion</label>
+                <select id="detailed-wcag">
+                    <option value="">Select WCAG...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Suggested Fix</label>
+                <textarea id="detailed-fix" placeholder="How to fix this issue"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Severity *</label>
+                <select id="detailed-severity">
+                    <option value="minor">Minor</option>
+                    <option value="moderate" selected>Moderate</option>
+                    <option value="serious">Serious</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Confidence</label>
+                <select id="detailed-confidence">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <button class="btn-success" onclick="createDetailedIssue()">Create</button>
+            <button class="btn-danger" onclick="hideDetailedIssue()">Cancel</button>
+        </div>
     </div>
 
     <script>
         let currentProjectId = null;
         let currentTargetId = null;
         let activeSessionId = null;
+        let wcagCriteria = [];
+        
+        // Load WCAG criteria on startup
+        async function loadWCAG() {
+            try {
+                const wcagFile = await fetch('/wcag_criteria_simple.json');
+                wcagCriteria = await wcagFile.json();
+            } catch (err) {
+                console.error('Failed to load WCAG:', err);
+            }
+        }
         
         // Load projects
         async function loadProjects() {
@@ -749,6 +845,29 @@ async def dashboard():
         function hideCreateIssue() {
             document.getElementById('create-issue-form').classList.add('hidden');
         }
+        async function showDetailedIssue() {
+            if (!currentProjectId) {
+                alert('Select a project first!');
+                return;
+            }
+            
+            // Load groups into dropdown
+            const res = await fetch(`/api/v1/projects/${currentProjectId}/groups`);
+            const data = await res.json();
+            const select = document.getElementById('detailed-group-id');
+            select.innerHTML = '<option value="">No group</option>' + 
+                data.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            
+            // Load WCAG into dropdown
+            const wcagSelect = document.getElementById('detailed-wcag');
+            wcagSelect.innerHTML = '<option value="">Select WCAG...</option>' + 
+                wcagCriteria.map(c => `<option value="${c.id}">${c.id} - ${c.title}</option>`).join('');
+            
+            document.getElementById('detailed-issue-form').classList.remove('hidden');
+        }
+        function hideDetailedIssue() {
+            document.getElementById('detailed-issue-form').classList.add('hidden');
+        }
         
         // Create project
         async function createProject() {
@@ -920,7 +1039,55 @@ async def dashboard():
             }
         }
         
+        // Create detailed issue
+        async function createDetailedIssue() {
+            const title = document.getElementById('detailed-title').value;
+            if (!title) {
+                alert('Title required!');
+                return;
+            }
+            
+            const data = {
+                project_id: currentProjectId,
+                target_id: currentTargetId,
+                session_id: activeSessionId,
+                finding_group_id: document.getElementById('detailed-group-id').value || null,
+                title,
+                steps_to_reproduce: document.getElementById('detailed-steps').value || null,
+                observed_behavior: document.getElementById('detailed-observed').value || null,
+                expected_behavior: document.getElementById('detailed-expected').value || null,
+                user_impact: document.getElementById('detailed-impact').value || null,
+                affected_element: document.getElementById('detailed-element').value || null,
+                wcag_criterion: document.getElementById('detailed-wcag').value || null,
+                suggested_fix: document.getElementById('detailed-fix').value || null,
+                severity: document.getElementById('detailed-severity').value,
+                confidence: document.getElementById('detailed-confidence').value,
+                source_type: 'manual',
+                status: 'new'
+            };
+            
+            const res = await fetch('/api/v1/issues', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            if (res.ok) {
+                hideDetailedIssue();
+                // Clear form
+                document.getElementById('detailed-title').value = '';
+                document.getElementById('detailed-steps').value = '';
+                document.getElementById('detailed-observed').value = '';
+                document.getElementById('detailed-expected').value = '';
+                document.getElementById('detailed-impact').value = '';
+                document.getElementById('detailed-element').value = '';
+                document.getElementById('detailed-fix').value = '';
+                loadIssues();
+            }
+        }
+        
         // Load on start
+        loadWCAG();
         loadProjects();
     </script>
 </body>
