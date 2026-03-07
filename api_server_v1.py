@@ -245,6 +245,40 @@ async def get_wcag():
         return JSONResponse(content=json.loads(wcag_file.read_text()))
     return JSONResponse(content=[])
 
+# ============= EXPORTS =============
+
+from exports import export_markdown, export_json, export_csv, get_statistics
+
+@app.get("/api/v1/projects/{project_id}/export/markdown")
+async def export_project_markdown(project_id: str):
+    """Export project as Markdown report"""
+    content = export_markdown(project_id)
+    return Response(content=content, media_type="text/markdown")
+
+@app.get("/api/v1/projects/{project_id}/export/json")
+async def export_project_json(project_id: str):
+    """Export project as JSON"""
+    data = export_json(project_id)
+    return data
+
+@app.get("/api/v1/projects/{project_id}/export/csv")
+async def export_project_csv(project_id: str):
+    """Export project as CSV"""
+    content = export_csv(project_id)
+    return Response(content=content, media_type="text/csv")
+
+@app.get("/api/v1/projects/{project_id}/statistics")
+async def project_statistics(project_id: str):
+    """Get project statistics"""
+    stats = get_statistics(project_id)
+    return stats
+
+@app.get("/api/v1/statistics")
+async def global_statistics():
+    """Get global statistics"""
+    stats = get_statistics()
+    return stats
+
 # ============= DASHBOARD =============
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -336,11 +370,37 @@ async def dashboard():
         .badge-serious { background: #ff6b6b; }
         .badge-moderate { background: #ffc107; color: #000; }
         .badge-minor { background: #6c757d; }
+        .stats-bar {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔍 A11y Workbench</h1>
+        
+        <!-- Global Statistics -->
+        <div id="global-stats" class="stats-bar"></div>
         
         <!-- Projects Section -->
         <div class="section">
@@ -692,10 +752,64 @@ async def dashboard():
                             <div class="list-item-title">${p.name}</div>
                             <div class="list-item-meta">${p.client_name || 'No client'} • ${p.status}</div>
                         </div>
-                        <button class="btn-primary" onclick="selectProject('${p.id}')">Open</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-primary" onclick="selectProject('${p.id}')">Open</button>
+                            <button class="btn-secondary" onclick="showExportMenu('${p.id}')">📥 Export</button>
+                        </div>
                     </div>
                 `).join('');
             }
+        }
+        
+        // Show export menu
+        function showExportMenu(projectId) {
+            const menu = `
+                <div style="margin-top: 10px; padding: 10px; background: #2a2a2a; border-radius: 6px;">
+                    <strong>Export Options:</strong>
+                    <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <a href="/api/v1/projects/${projectId}/export/markdown" download="report.md" class="btn-primary" style="text-decoration: none;">📄 Markdown</a>
+                        <a href="/api/v1/projects/${projectId}/export/json" download="report.json" class="btn-primary" style="text-decoration: none;">📊 JSON</a>
+                        <a href="/api/v1/projects/${projectId}/export/csv" download="report.csv" class="btn-primary" style="text-decoration: none;">📋 CSV</a>
+                        <button class="btn-secondary" onclick="showStatistics('${projectId}')">📈 Stats</button>
+                    </div>
+                </div>
+            `;
+            
+            // Find the project item and add menu
+            const projectItems = document.querySelectorAll('.list-item');
+            projectItems.forEach(item => {
+                const existingMenu = item.querySelector('.export-menu');
+                if (existingMenu) existingMenu.remove();
+            });
+            
+            const projectItem = event.target.closest('.list-item');
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'export-menu';
+            menuDiv.innerHTML = menu;
+            projectItem.appendChild(menuDiv);
+        }
+        
+        // Show statistics
+        async function showStatistics(projectId) {
+            const res = await fetch(`/api/v1/projects/${projectId}/statistics`);
+            const stats = await res.json();
+            
+            const content = `
+                <h3>📈 Project Statistics</h3>
+                <div style="margin-top: 15px;">
+                    <p><strong>Total Issues:</strong> ${stats.total_issues}</p>
+                    <p><strong>By Severity:</strong></p>
+                    <ul>
+                        <li>Critical: ${stats.by_severity.critical || 0}</li>
+                        <li>Serious: ${stats.by_severity.serious || 0}</li>
+                        <li>Moderate: ${stats.by_severity.moderate || 0}</li>
+                        <li>Minor: ${stats.by_severity.minor || 0}</li>
+                    </ul>
+                    <p><strong>WCAG Criteria:</strong> ${stats.wcag_criteria.join(', ') || 'None'}</p>
+                </div>
+            `;
+            
+            showModal('Statistics', content);
         }
         
         // Select project
@@ -972,6 +1086,7 @@ async def dashboard():
                 document.getElementById('project-client').value = '';
                 document.getElementById('project-description').value = '';
                 loadProjects();
+                loadGlobalStats(); // Update stats
             }
         }
         
@@ -1113,6 +1228,7 @@ async def dashboard():
                 document.getElementById('issue-title').value = '';
                 document.getElementById('issue-note').value = '';
                 loadIssues();
+                loadGlobalStats(); // Update stats
             }
         }
         
@@ -1160,6 +1276,7 @@ async def dashboard():
                 document.getElementById('detailed-element').value = '';
                 document.getElementById('detailed-fix').value = '';
                 loadIssues();
+                loadGlobalStats(); // Update stats
             }
         }
         
@@ -1253,7 +1370,44 @@ async def dashboard():
                     searchTimeout = setTimeout(() => loadIssues(), 300);
                 });
             }
+            
+            // Load global statistics
+            loadGlobalStats();
         });
+        
+        // Load global statistics
+        async function loadGlobalStats() {
+            try {
+                const res = await fetch('/api/v1/statistics');
+                const stats = await res.json();
+                
+                const statsBar = document.getElementById('global-stats');
+                statsBar.innerHTML = `
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.total_projects || 0}</div>
+                        <div class="stat-label">Projects</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.total_issues || 0}</div>
+                        <div class="stat-label">Total Issues</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.by_severity?.critical || 0}</div>
+                        <div class="stat-label">Critical</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.by_severity?.serious || 0}</div>
+                        <div class="stat-label">Serious</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.wcag_criteria?.length || 0}</div>
+                        <div class="stat-label">WCAG Criteria</div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Failed to load stats:', err);
+            }
+        }
         
         // Load on start
         loadWCAG();
