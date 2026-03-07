@@ -2,7 +2,7 @@
 
 **Accessibility testing workflow system for blind accessibility specialists**
 
-A production-ready system for manual accessibility testing with AI-assisted reporting, designed by and for blind screen reader users.
+A practical accessibility testing workflow system for manual testing with AI-assisted reporting, designed by and for blind screen reader users.
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
@@ -12,12 +12,18 @@ A production-ready system for manual accessibility testing with AI-assisted repo
 
 ## 🎯 Project Overview
 
-A11y Workbench is a personal production system for accessibility testing that helps blind specialists:
+A11y Workbench is a production-oriented accessibility testing system that helps blind specialists:
 - Quickly capture accessibility issues during manual testing
 - Transform short notes into professional defect reports
 - Manage projects and testing sessions
 - Export developer-ready reports
 - Build portfolio of accessibility work
+
+### Example Workflow
+```
+Create project → Add target page → Start test session → 
+Quick capture issues → Add evidence → Generate report
+```
 
 ### Key Innovation
 Built by a blind accessibility specialist for real-world accessibility testing workflow, with full keyboard navigation and screen reader support.
@@ -49,7 +55,7 @@ Built by a blind accessibility specialist for real-world accessibility testing w
 - **Keyboard-first interface** - Full keyboard navigation
 - **Screen reader optimized** - Tested with NVDA and VoiceOver
 - **Logical structure** - Proper headings and landmarks
-- **No inaccessible modals** - Everything accessible
+- **Accessible design** - Built with accessibility as core principle
 
 ### 🤖 AI-Assisted (Optional)
 - Transform quick notes into structured reports
@@ -132,11 +138,7 @@ http://localhost:8000
 
 ## 🎓 Background
 
-Created by a blind accessibility specialist with:
-- 7 years teaching blind users digital technologies
-- Experience with WCAG testing and reporting
-- Real-world screen reader expertise (NVDA, VoiceOver, JAWS)
-- Understanding of accessibility testing challenges
+Created by a blind accessibility specialist with experience in WCAG testing, screen reader expertise (NVDA, VoiceOver, JAWS), and understanding of real-world accessibility testing challenges.
 
 ---
 
