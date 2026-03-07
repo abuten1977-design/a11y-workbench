@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS targets (
     project_id TEXT NOT NULL,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
-    flow_type TEXT NOT NULL,
+    flow_type TEXT DEFAULT 'page',
     notes TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
