@@ -14,7 +14,7 @@ from pathlib import Path
 # Add current directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from repositories import projects, targets, issues, evidence, sessions
+from repositories import projects, targets, issues, evidence, sessions, finding_groups
 
 app = FastAPI(
     title="A11y Workbench API",
@@ -41,6 +41,7 @@ class TargetCreate(BaseModel):
 class IssueCreate(BaseModel):
     project_id: str
     target_id: Optional[str] = None
+    finding_group_id: Optional[str] = None
     title: str
     raw_note: Optional[str] = None
     description: Optional[str] = None
@@ -65,6 +66,13 @@ class EvidenceCreate(BaseModel):
     issue_id: str
     type: str
     content: str
+
+class FindingGroupCreate(BaseModel):
+    project_id: str
+    target_id: Optional[str] = None
+    name: str
+    category: str
+    notes: Optional[str] = None
 
 # ============= API ENDPOINTS =============
 
@@ -161,6 +169,24 @@ async def end_session(session_id: str):
     if not success:
         raise HTTPException(status_code=404, detail="Session not found")
     return {"message": "Session ended"}
+
+# FindingGroups
+@app.get("/api/v1/projects/{project_id}/groups")
+async def list_groups(project_id: str):
+    items = finding_groups.list_by_project(project_id)
+    return {"groups": items, "total": len(items)}
+
+@app.post("/api/v1/groups")
+async def create_group(data: FindingGroupCreate):
+    group_id = finding_groups.create(data.dict())
+    return {"id": group_id, "message": "Group created"}
+
+@app.get("/api/v1/groups/{group_id}")
+async def get_group(group_id: str):
+    group = finding_groups.get(group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    return group
 
 @app.get("/api/v1/issues/{issue_id}")
 async def get_issue(issue_id: str):
@@ -329,6 +355,13 @@ async def dashboard():
             </div>
         </div>
         
+        <!-- FindingGroups Section -->
+        <div class="section hidden" id="groups-section">
+            <h2>📂 Finding Groups</h2>
+            <button class="btn-primary" onclick="showCreateGroup()">+ New Group</button>
+            <div id="groups-list" class="list" style="margin-top: 15px;"></div>
+        </div>
+        
         <!-- Issues Section -->
         <div class="section hidden" id="issues-section">
             <h2>🐛 Issues</h2>
@@ -434,9 +467,44 @@ async def dashboard():
             <button class="btn-danger" onclick="hideStartSession()">Cancel</button>
         </div>
         
+        <!-- Create Group Form -->
+        <div id="create-group-form" class="section hidden">
+            <h2>Create Finding Group</h2>
+            <div class="form-group">
+                <label>Name *</label>
+                <input type="text" id="group-name" placeholder="e.g., Form Issues">
+            </div>
+            <div class="form-group">
+                <label>Category *</label>
+                <select id="group-category">
+                    <option value="forms">Forms</option>
+                    <option value="navigation">Navigation</option>
+                    <option value="buttons">Buttons & Controls</option>
+                    <option value="aria">ARIA</option>
+                    <option value="focus">Focus Management</option>
+                    <option value="semantics">Semantics</option>
+                    <option value="images">Images & Media</option>
+                    <option value="tables">Tables</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="group-notes" placeholder="Optional"></textarea>
+            </div>
+            <button class="btn-success" onclick="createGroup()">Create</button>
+            <button class="btn-danger" onclick="hideCreateGroup()">Cancel</button>
+        </div>
+        
         <!-- Create Issue Form -->
         <div id="create-issue-form" class="section hidden">
             <h2>Quick Capture Issue</h2>
+            <div class="form-group">
+                <label>Group (optional)</label>
+                <select id="issue-group-id">
+                    <option value="">No group</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label>Title *</label>
                 <input type="text" id="issue-title" placeholder="e.g., Button unlabeled">
@@ -490,9 +558,11 @@ async def dashboard():
             currentProjectId = projectId;
             document.getElementById('targets-section').classList.remove('hidden');
             document.getElementById('sessions-section').classList.remove('hidden');
+            document.getElementById('groups-section').classList.remove('hidden');
             document.getElementById('issues-section').classList.remove('hidden');
             loadTargets();
             loadSessions();
+            loadGroups();
             loadIssues();
         }
         
@@ -565,6 +635,28 @@ async def dashboard():
             }
         }
         
+        // Load groups
+        async function loadGroups() {
+            if (!currentProjectId) return;
+            
+            const res = await fetch(`/api/v1/projects/${currentProjectId}/groups`);
+            const data = await res.json();
+            
+            const list = document.getElementById('groups-list');
+            if (data.groups.length === 0) {
+                list.innerHTML = '<div class="empty">No groups yet. Create one!</div>';
+            } else {
+                list.innerHTML = data.groups.map(g => `
+                    <div class="list-item">
+                        <div>
+                            <div class="list-item-title">${g.name}</div>
+                            <div class="list-item-meta">${g.category}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
         // Load issues
         async function loadIssues() {
             if (!currentProjectId) return;
@@ -629,11 +721,29 @@ async def dashboard():
         function hideStartSession() {
             document.getElementById('start-session-form').classList.add('hidden');
         }
-        function showCreateIssue() {
+        function showCreateGroup() {
             if (!currentProjectId) {
                 alert('Select a project first!');
                 return;
             }
+            document.getElementById('create-group-form').classList.remove('hidden');
+        }
+        function hideCreateGroup() {
+            document.getElementById('create-group-form').classList.add('hidden');
+        }
+        async function showCreateIssue() {
+            if (!currentProjectId) {
+                alert('Select a project first!');
+                return;
+            }
+            
+            // Load groups into dropdown
+            const res = await fetch(`/api/v1/projects/${currentProjectId}/groups`);
+            const data = await res.json();
+            const select = document.getElementById('issue-group-id');
+            select.innerHTML = '<option value="">No group</option>' + 
+                data.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            
             document.getElementById('create-issue-form').classList.remove('hidden');
         }
         function hideCreateIssue() {
@@ -749,6 +859,36 @@ async def dashboard():
             }
         }
         
+        // Create group
+        async function createGroup() {
+            const name = document.getElementById('group-name').value;
+            if (!name) {
+                alert('Group name required!');
+                return;
+            }
+            
+            const data = {
+                project_id: currentProjectId,
+                target_id: currentTargetId,
+                name,
+                category: document.getElementById('group-category').value,
+                notes: document.getElementById('group-notes').value || null
+            };
+            
+            const res = await fetch('/api/v1/groups', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            if (res.ok) {
+                hideCreateGroup();
+                document.getElementById('group-name').value = '';
+                document.getElementById('group-notes').value = '';
+                loadGroups();
+            }
+        }
+        
         // Create issue
         async function createIssue() {
             const title = document.getElementById('issue-title').value;
@@ -760,6 +900,7 @@ async def dashboard():
             const data = {
                 project_id: currentProjectId,
                 target_id: currentTargetId,
+                finding_group_id: document.getElementById('issue-group-id').value || null,
                 title,
                 raw_note: document.getElementById('issue-note').value || null,
                 severity: document.getElementById('issue-severity').value
