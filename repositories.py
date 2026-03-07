@@ -46,6 +46,13 @@ class TestSessionRepository(BaseRepository):
         query = f"SELECT * FROM {self.table_name} WHERE target_id = ? ORDER BY started_at DESC"
         rows = db.fetchall(query, (target_id,))
         return [dict(row) for row in rows]
+    
+    def end_session(self, session_id: str) -> bool:
+        """End session by setting completed_at"""
+        from datetime import datetime
+        query = f"UPDATE {self.table_name} SET completed_at = ? WHERE id = ?"
+        result = db.execute(query, (datetime.now().isoformat(), session_id))
+        return result > 0
 
 
 class FindingGroupRepository(BaseRepository):

@@ -14,7 +14,7 @@ from pathlib import Path
 # Add current directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from repositories import projects, targets, issues, evidence
+from repositories import projects, targets, issues, evidence, sessions
 
 app = FastAPI(
     title="A11y Workbench API",
@@ -140,12 +140,12 @@ async def create_issue(data: IssueCreate):
 # Sessions
 @app.get("/api/v1/projects/{project_id}/sessions")
 async def list_sessions(project_id: str):
-    items = test_sessions.list_by_project(project_id)
+    items = sessions.list_by_project(project_id)
     return {"sessions": items, "total": len(items)}
 
 @app.post("/api/v1/sessions")
 async def create_session(data: dict):
-    session_id = test_sessions.create(
+    session_id = sessions.create(
         project_id=data['project_id'],
         target_id=data.get('target_id'),
         assistive_tech=data['assistive_tech'],
@@ -157,7 +157,7 @@ async def create_session(data: dict):
 
 @app.put("/api/v1/sessions/{session_id}/end")
 async def end_session(session_id: str):
-    success = test_sessions.end_session(session_id)
+    success = sessions.end_session(session_id)
     if not success:
         raise HTTPException(status_code=404, detail="Session not found")
     return {"message": "Session ended"}
