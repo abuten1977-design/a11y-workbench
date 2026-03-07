@@ -1,31 +1,46 @@
 # Python
-venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Environment
+.env
+.env.local
+
+# Database
+*.db
+data.db
+
+# Logs
+*.log
+worker_test.log
+
+# Temporary files
+*aiwork*
+temp.txt
+*.tmp
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-
-# Temp
-*.tmp
-.cache/
-
-# Project specific
-403*
-303*
-301*
-*.pid
-worker_output.log
+# Server specific
+*.sh
+server_report.md
+why_server_needed.md
+plan_4_weeks.md
+analiz_rynka_realnost.md
+day1_instructions.md
