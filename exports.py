@@ -176,7 +176,7 @@ def get_statistics(project_id: str = None) -> Dict[str, Any]:
         }
     else:
         # Global stats
-        all_projects = projects.list()
+        all_projects = projects.list_all()
         all_issues = []
         for proj in all_projects:
             all_issues.extend(issues.list_by_project(proj['id']))
