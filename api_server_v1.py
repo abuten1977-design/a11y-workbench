@@ -385,9 +385,32 @@ async def dashboard():
         <!-- Issues Section -->
         <div class="section hidden" id="issues-section">
             <h2>🐛 Issues</h2>
-            <button class="btn-success" onclick="showCreateIssue()">+ Quick Capture</button>
-            <button class="btn-primary" onclick="showDetailedIssue()" style="margin-left: 10px;">+ Detailed Issue</button>
-            <div id="issues-list" class="list" style="margin-top: 15px;"></div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <button class="btn-success" onclick="showCreateIssue()">+ Quick Capture</button>
+                <button class="btn-primary" onclick="showDetailedIssue()">+ Detailed Issue</button>
+            </div>
+            
+            <!-- Filters -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                <input type="text" id="filter-search" placeholder="Search title..." style="padding: 8px; background: #333; border: 1px solid #444; border-radius: 6px; color: white;">
+                <select id="filter-severity" onchange="loadIssues()" style="padding: 8px; background: #333; border: 1px solid #444; border-radius: 6px; color: white;">
+                    <option value="">All Severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="serious">Serious</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="minor">Minor</option>
+                </select>
+                <select id="filter-status" onchange="loadIssues()" style="padding: 8px; background: #333; border: 1px solid #444; border-radius: 6px; color: white;">
+                    <option value="">All Statuses</option>
+                    <option value="new">New</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="fixed">Fixed</option>
+                    <option value="wontfix">Won't Fix</option>
+                </select>
+                <button class="btn-primary" onclick="clearFilters()" style="padding: 8px;">Clear Filters</button>
+            </div>
+            
+            <div id="issues-list" class="list"></div>
         </div>
         
         <!-- Create Project Form -->
@@ -790,26 +813,53 @@ async def dashboard():
         async function loadIssues() {
             if (!currentProjectId) return;
             
-            const res = await fetch(`/api/v1/projects/${currentProjectId}/issues`);
+            // Build query params
+            const params = new URLSearchParams();
+            const severity = document.getElementById('filter-severity')?.value;
+            const status = document.getElementById('filter-status')?.value;
+            
+            if (severity) params.append('severity', severity);
+            if (status) params.append('status', status);
+            
+            const res = await fetch(`/api/v1/projects/${currentProjectId}/issues?${params}`);
             const data = await res.json();
             
+            // Client-side search filter
+            const searchTerm = document.getElementById('filter-search')?.value.toLowerCase() || '';
+            let filtered = data.issues;
+            if (searchTerm) {
+                filtered = filtered.filter(i => 
+                    i.title.toLowerCase().includes(searchTerm) ||
+                    (i.description && i.description.toLowerCase().includes(searchTerm))
+                );
+            }
+            
             const list = document.getElementById('issues-list');
-            if (data.issues.length === 0) {
-                list.innerHTML = '<div class="empty">No issues yet. Create one!</div>';
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty">No issues found</div>';
             } else {
-                list.innerHTML = data.issues.map(i => `
+                list.innerHTML = filtered.map(i => `
                     <div class="list-item">
                         <div>
                             <div class="list-item-title">${i.title}</div>
                             <div class="list-item-meta">
                                 <span class="badge badge-${i.severity}">${i.severity}</span>
-                                ${i.wcag_criterion || 'No WCAG'}
+                                ${i.status ? `<span style="opacity: 0.7;">• ${i.status}</span>` : ''}
+                                ${i.wcag_criterion ? `<span style="opacity: 0.7;">• ${i.wcag_criterion}</span>` : ''}
                             </div>
                         </div>
                         <button class="btn-primary" onclick="viewIssue('${i.id}')">View</button>
                     </div>
                 `).join('');
             }
+        }
+        
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filter-search').value = '';
+            document.getElementById('filter-severity').value = '';
+            document.getElementById('filter-status').value = '';
+            loadIssues();
         }
         
         // Show/hide forms
@@ -1199,6 +1249,18 @@ async def dashboard():
                 viewIssue(currentIssueId); // Reload
             }
         }
+        
+        // Search debounce
+        let searchTimeout;
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('filter-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => loadIssues(), 300);
+                });
+            }
+        });
         
         // Load on start
         loadWCAG();
