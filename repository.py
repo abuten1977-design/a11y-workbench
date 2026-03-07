@@ -43,6 +43,10 @@ class BaseRepository:
         if 'updated_at' not in data and self.table_name not in ['evidence', 'checklist_results']:
             data['updated_at'] = now_iso()
         
+        # Add started_at for test_sessions
+        if self.table_name == 'test_sessions' and 'started_at' not in data:
+            data['started_at'] = now_iso()
+        
         # Build INSERT query
         columns = ', '.join(data.keys())
         placeholders = ', '.join(['?' for _ in data])

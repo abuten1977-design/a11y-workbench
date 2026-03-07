@@ -37,15 +37,17 @@ CREATE INDEX IF NOT EXISTS idx_targets_flow_type ON targets(flow_type);
 CREATE TABLE IF NOT EXISTS test_sessions (
     id TEXT PRIMARY KEY,
     project_id TEXT NOT NULL,
-    target_id TEXT NOT NULL,
+    target_id TEXT,
     assistive_tech TEXT NOT NULL,
     browser TEXT NOT NULL,
     platform TEXT NOT NULL,
     started_at TEXT NOT NULL,
     completed_at TEXT,
     tester_notes TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (target_id) REFERENCES targets(id) ON DELETE CASCADE
+    FOREIGN KEY (target_id) REFERENCES targets(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_sessions_project ON test_sessions(project_id);
@@ -85,7 +87,7 @@ CREATE TABLE IF NOT EXISTS issues (
     expected_behavior TEXT,
     user_impact TEXT,
     severity TEXT NOT NULL,
-    confidence TEXT NOT NULL DEFAULT 'exact',
+    confidence TEXT DEFAULT 'exact',
     affected_element TEXT,
     wcag_criterion TEXT,
     suggested_fix TEXT,

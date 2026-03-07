@@ -26,14 +26,17 @@ def test_complete_testing_workflow():
     
     # 3. Start session
     session_resp = client.post("/api/v1/sessions", json={
+        "project_id": proj["id"],
         "target_id": target_id,
-        "screen_reader": "NVDA",
-        "browser": "Firefox"
+        "assistive_tech": "NVDA",
+        "browser": "Firefox",
+        "platform": "Windows 11"
     })
     assert session_resp.status_code == 200
     
     # 4. Create issue
     issue_resp = client.post("/api/v1/issues", json={
+        "project_id": proj["id"],
         "target_id": target_id,
         "title": "Submit button missing accessible name",
         "severity": "serious"
@@ -44,14 +47,16 @@ def test_complete_testing_workflow():
     # 5. Add evidence
     evidence_resp = client.post("/api/v1/evidence", json={
         "issue_id": issue_id,
-        "evidence_type": "screen_reader_output",
+        "type": "screen_reader_output",
         "content": "Button, unlabeled"
     })
     assert evidence_resp.status_code == 200
     
     # 6. Verify issues exist
-    issues = client.get(f"/api/v1/projects/{proj['id']}/issues").json()
-    assert len(issues) >= 1
+    issues_resp = client.get(f"/api/v1/projects/{proj['id']}/issues")
+    assert issues_resp.status_code == 200
+    data = issues_resp.json()
+    assert data["total"] >= 1
 
 def test_multiple_projects_workflow():
     """Test: Multiple projects with targets and issues"""
@@ -76,11 +81,13 @@ def test_multiple_projects_workflow():
     
     # Add issues
     client.post("/api/v1/issues", json={
+        "project_id": proj1["id"],
         "target_id": target1_id,
         "title": "Issue A",
         "severity": "critical"
     })
     client.post("/api/v1/issues", json={
+        "project_id": proj2["id"],
         "target_id": target2_id,
         "title": "Issue B",
         "severity": "moderate"
@@ -89,5 +96,36 @@ def test_multiple_projects_workflow():
     # Verify both projects have issues
     issues1 = client.get(f"/api/v1/projects/{proj1['id']}/issues").json()
     issues2 = client.get(f"/api/v1/projects/{proj2['id']}/issues").json()
-    assert len(issues1) >= 1
-    assert len(issues2) >= 1
+    assert issues1["total"] >= 1
+    assert issues2["total"] >= 1
+
+def test_filtering_issues():
+    """Test: Filter issues by severity"""
+    proj = client.post("/api/v1/projects", json={"name": "Test"}).json()
+    target_resp = client.post("/api/v1/targets", json={
+        "project_id": proj["id"],
+        "name": "Page",
+        "url": "https://example.com"
+    })
+    target_id = target_resp.json()["id"]
+    
+    # Create issues with different severities
+    client.post("/api/v1/issues", json={
+        "project_id": proj["id"],
+        "target_id": target_id,
+        "title": "Critical issue",
+        "severity": "critical"
+    })
+    client.post("/api/v1/issues", json={
+        "project_id": proj["id"],
+        "target_id": target_id,
+        "title": "Moderate issue",
+        "severity": "moderate"
+    })
+    
+    # Filter by severity
+    critical = client.get(f"/api/v1/projects/{proj['id']}/issues?severity=critical").json()
+    all_issues = client.get(f"/api/v1/projects/{proj['id']}/issues").json()
+    
+    assert critical["total"] == 1
+    assert all_issues["total"] >= 2

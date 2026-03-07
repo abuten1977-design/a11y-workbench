@@ -162,14 +162,7 @@ async def list_sessions(project_id: str):
 
 @app.post("/api/v1/sessions")
 async def create_session(data: dict):
-    session_id = sessions.create(
-        project_id=data['project_id'],
-        target_id=data.get('target_id'),
-        assistive_tech=data['assistive_tech'],
-        browser=data['browser'],
-        platform=data['platform'],
-        tester_notes=data.get('tester_notes')
-    )
+    session_id = sessions.create(data)
     return {"id": session_id, "message": "Session started"}
 
 @app.put("/api/v1/sessions/{session_id}/end")
