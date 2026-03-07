@@ -610,12 +610,45 @@ async def dashboard():
             <button class="btn-success" onclick="createDetailedIssue()">Create</button>
             <button class="btn-danger" onclick="hideDetailedIssue()">Cancel</button>
         </div>
+        
+        <!-- Issue Detail Modal -->
+        <div id="issue-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto; padding: 20px;">
+            <div style="max-width: 900px; margin: 0 auto; background: #2a2a2a; padding: 30px; border-radius: 8px;">
+                <h2 id="modal-title" style="margin-bottom: 20px;"></h2>
+                
+                <div id="modal-content" style="margin-bottom: 30px;"></div>
+                
+                <h3 style="margin-bottom: 15px;">📎 Evidence</h3>
+                <div id="evidence-list" style="margin-bottom: 20px;"></div>
+                
+                <div style="background: #1a1a1a; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 10px;">Add Evidence</h4>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="evidence-type">
+                            <option value="screen_reader_output">Screen Reader Output</option>
+                            <option value="code">Code Snippet</option>
+                            <option value="aria_dump">ARIA Dump</option>
+                            <option value="note">Note</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Content</label>
+                        <textarea id="evidence-content" placeholder="Paste screen reader output, code, or notes" style="min-height: 100px;"></textarea>
+                    </div>
+                    <button class="btn-success" onclick="addEvidence()">Add Evidence</button>
+                </div>
+                
+                <button class="btn-danger" onclick="closeIssueModal()">Close</button>
+            </div>
+        </div>
     </div>
 
     <script>
         let currentProjectId = null;
         let currentTargetId = null;
         let activeSessionId = null;
+        let currentIssueId = null;
         let wcagCriteria = [];
         
         // Load WCAG criteria on startup
@@ -773,6 +806,7 @@ async def dashboard():
                                 ${i.wcag_criterion || 'No WCAG'}
                             </div>
                         </div>
+                        <button class="btn-primary" onclick="viewIssue('${i.id}')">View</button>
                     </div>
                 `).join('');
             }
@@ -1083,6 +1117,86 @@ async def dashboard():
                 document.getElementById('detailed-element').value = '';
                 document.getElementById('detailed-fix').value = '';
                 loadIssues();
+            }
+        }
+        
+        // View issue detail
+        async function viewIssue(issueId) {
+            currentIssueId = issueId;
+            
+            const res = await fetch(`/api/v1/issues/${issueId}`);
+            const issue = await res.json();
+            
+            document.getElementById('modal-title').textContent = issue.title;
+            
+            let content = `
+                <div style="display: grid; gap: 15px;">
+                    ${issue.severity ? `<div><strong>Severity:</strong> <span class="badge badge-${issue.severity}">${issue.severity}</span></div>` : ''}
+                    ${issue.wcag_criterion ? `<div><strong>WCAG:</strong> ${issue.wcag_criterion}</div>` : ''}
+                    ${issue.affected_element ? `<div><strong>Element:</strong> <code>${issue.affected_element}</code></div>` : ''}
+                    ${issue.steps_to_reproduce ? `<div><strong>Steps:</strong><pre style="background: #1a1a1a; padding: 10px; border-radius: 4px; white-space: pre-wrap;">${issue.steps_to_reproduce}</pre></div>` : ''}
+                    ${issue.observed_behavior ? `<div><strong>Observed:</strong> ${issue.observed_behavior}</div>` : ''}
+                    ${issue.expected_behavior ? `<div><strong>Expected:</strong> ${issue.expected_behavior}</div>` : ''}
+                    ${issue.user_impact ? `<div><strong>Impact:</strong> ${issue.user_impact}</div>` : ''}
+                    ${issue.suggested_fix ? `<div><strong>Fix:</strong> ${issue.suggested_fix}</div>` : ''}
+                    ${issue.raw_note ? `<div><strong>Note:</strong> ${issue.raw_note}</div>` : ''}
+                </div>
+            `;
+            
+            document.getElementById('modal-content').innerHTML = content;
+            
+            // Load evidence
+            const evidenceRes = await fetch(`/api/v1/issues/${issueId}/evidence`);
+            const evidenceData = await evidenceRes.json();
+            
+            const evidenceList = document.getElementById('evidence-list');
+            if (evidenceData.evidence.length === 0) {
+                evidenceList.innerHTML = '<div class="empty">No evidence yet</div>';
+            } else {
+                evidenceList.innerHTML = evidenceData.evidence.map(e => `
+                    <div style="background: #1a1a1a; padding: 15px; border-radius: 6px; margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <strong>${e.type.replace('_', ' ')}</strong>
+                            <span style="opacity: 0.6; font-size: 12px;">${new Date(e.created_at).toLocaleString()}</span>
+                        </div>
+                        <pre style="white-space: pre-wrap; margin: 0;">${e.content}</pre>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('issue-modal').classList.remove('hidden');
+        }
+        
+        function closeIssueModal() {
+            document.getElementById('issue-modal').classList.add('hidden');
+            currentIssueId = null;
+            document.getElementById('evidence-content').value = '';
+        }
+        
+        async function addEvidence() {
+            if (!currentIssueId) return;
+            
+            const content = document.getElementById('evidence-content').value;
+            if (!content) {
+                alert('Content required!');
+                return;
+            }
+            
+            const data = {
+                issue_id: currentIssueId,
+                type: document.getElementById('evidence-type').value,
+                content: content
+            };
+            
+            const res = await fetch('/api/v1/evidence', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            if (res.ok) {
+                document.getElementById('evidence-content').value = '';
+                viewIssue(currentIssueId); // Reload
             }
         }
         
