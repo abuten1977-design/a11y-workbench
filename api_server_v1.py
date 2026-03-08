@@ -701,15 +701,15 @@ async def dashboard():
                     <h4 style="margin-bottom: 10px;">Add Evidence</h4>
                     <div class="form-group">
                         <label>Type</label>
-                        <select id="evidence-type">
+                        <select id="evidence-type" onchange="updateEvidenceLabel()">
                             <option value="screen_reader_output">Screen Reader Output</option>
                             <option value="code">Code Snippet</option>
-                            <option value="aria_dump">ARIA Dump</option>
-                            <option value="note">Note</option>
+                            <option value="aria_dump">ARIA Info</option>
+                            <option value="note">Notes</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Content</label>
+                        <label id="evidence-content-label">Screen Reader Output</label>
                         <textarea id="evidence-content" placeholder="Paste screen reader output, code, or notes" style="min-height: 100px;"></textarea>
                     </div>
                     <button class="btn-success" onclick="addEvidence()">Add Evidence</button>
@@ -1125,35 +1125,51 @@ async def dashboard():
         
         // Start session
         async function startSession() {
-            const targetId = document.getElementById('session-target-id').value;
-            const at = document.getElementById('session-at').value;
-            const browser = document.getElementById('session-browser').value;
-            const platform = document.getElementById('session-platform').value;
-            
-            if (!targetId) {
-                alert('Select a target!');
-                return;
-            }
-            
-            const data = {
-                project_id: currentProjectId,
-                target_id: targetId,
-                assistive_tech: at,
-                browser: browser,
-                platform: platform,
-                tester_notes: document.getElementById('session-notes').value || null
-            };
-            
-            const res = await fetch('/api/v1/sessions', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            
-            if (res.ok) {
-                hideStartSession();
-                document.getElementById('session-notes').value = '';
-                loadSessions();
+            try {
+                const targetId = document.getElementById('session-target-id').value;
+                const at = document.getElementById('session-at').value;
+                const browser = document.getElementById('session-browser').value;
+                const platform = document.getElementById('session-platform').value;
+                
+                if (!targetId) {
+                    alert('Select a target!');
+                    return;
+                }
+                
+                if (!currentProjectId) {
+                    alert('No project selected!');
+                    return;
+                }
+                
+                const data = {
+                    project_id: currentProjectId,
+                    target_id: targetId,
+                    assistive_tech: at,
+                    browser: browser,
+                    platform: platform,
+                    tester_notes: document.getElementById('session-notes').value || null
+                };
+                
+                console.log('Creating session:', data);
+                
+                const res = await fetch('/api/v1/sessions', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    hideStartSession();
+                    document.getElementById('session-notes').value = '';
+                    await loadSessions();
+                    alert('Session started!');
+                } else {
+                    const error = await res.text();
+                    alert('Error: ' + error);
+                }
+            } catch (err) {
+                console.error('Error starting session:', err);
+                alert('Error: ' + err.message);
             }
         }
         
@@ -1331,6 +1347,18 @@ async def dashboard():
             document.getElementById('issue-modal').classList.add('hidden');
             currentIssueId = null;
             document.getElementById('evidence-content').value = '';
+        }
+        
+        function updateEvidenceLabel() {
+            const type = document.getElementById('evidence-type').value;
+            const label = document.getElementById('evidence-content-label');
+            const labels = {
+                'screen_reader_output': 'Screen Reader Output',
+                'code': 'Code Snippet',
+                'aria_dump': 'ARIA Info',
+                'note': 'Notes'
+            };
+            label.textContent = labels[type] || 'Content';
         }
         
         async function addEvidence() {
