@@ -1,0 +1,155 @@
+# AXE-CORE Results: lifeindenmark.borger.dk
+
+**Date:** 8 March 2026  
+**Tool:** axe-core 4.11.1  
+**Tested by:** Automated scan
+
+---
+
+## 📊 Summary
+
+**Pages tested:** 3
+- Homepage: https://lifeindenmark.borger.dk/
+- Housing and Moving: https://lifeindenmark.borger.dk/housing-and-moving
+- Working: https://lifeindenmark.borger.dk/working
+
+**Results:**
+- ✅ **Violations:** 0 (across all pages)
+- ✅ **Passes:** 31 checks (each page)
+- ⚠️ **Incomplete:** 1 (requires manual review)
+- ℹ️ **Inapplicable:** 58 checks
+
+---
+
+## ✅ Good News!
+
+The site is **technically clean** according to automated testing:
+- No missing alt texts
+- No color contrast issues
+- No ARIA errors
+- No form label problems
+- No HTML validation errors
+
+**This is actually GOOD for your demo!**
+
+---
+
+## ⚠️ BUT: Automated testing only covers ~30% of accessibility
+
+### What axe-core CANNOT detect:
+
+#### 🔴 Critical issues axe misses:
+- Keyboard traps
+- Focus management problems
+- Screen reader announcement issues
+- Logical tab order problems
+- Dynamic content not announced
+
+#### 🟠 Serious issues axe misses:
+- Skip links not working
+- Dropdown menus not keyboard accessible
+- Form error announcements
+- Modal dialog focus management
+- Live region problems
+
+#### 🟡 Moderate issues axe misses:
+- Confusing link text ("Read more", "Click here")
+- Illogical heading structure
+- Poor alt text quality (present but meaningless)
+- Redundant ARIA
+- Poor screen reader UX
+
+---
+
+## 🎯 Your Task: Manual Testing
+
+### Focus on what axe CANNOT test:
+
+1. **Keyboard Navigation**
+   - Can you reach all interactive elements?
+   - Is tab order logical?
+   - Can you open dropdown menus?
+   - Can you close modals?
+   - Any keyboard traps?
+
+2. **Screen Reader Experience**
+   - Are headings logical?
+   - Are landmarks announced?
+   - Are links understandable out of context?
+   - Are form errors announced?
+   - Is dynamic content announced?
+
+3. **Focus Management**
+   - Is focus visible?
+   - Does focus move logically?
+   - Does focus return after closing modals?
+   - Is focus not lost?
+
+4. **Interactive Components**
+   - Navigation menus
+   - Search functionality
+   - Cookie banner
+   - Any forms
+   - Any modals/dialogs
+
+---
+
+## 💡 This is PERFECT for your demo!
+
+### Why this is good:
+
+1. **Shows your value**
+   - Automated tools say "0 violations"
+   - But you will find real problems
+   - Proves manual testing is essential
+
+2. **Demonstrates expertise**
+   - You understand automated tools
+   - But you know their limitations
+   - You provide what automation cannot
+
+3. **Professional approach**
+   - Combined automated + manual testing
+   - Systematic methodology
+   - Comprehensive coverage
+
+---
+
+## 📝 For your report, write:
+
+```markdown
+## Testing Methodology
+
+### Automated Testing
+- Tool: axe-core 4.11.1
+- Result: 0 violations detected
+- Coverage: ~30% of WCAG criteria
+
+### Manual Testing
+- Screen Reader: NVDA 2024.1
+- Browser: Chrome 120
+- Focus: Keyboard navigation, screen reader UX, focus management
+- Result: [X] issues found that automated tools missed
+
+## Key Finding
+While automated testing found no violations, manual testing with 
+screen reader revealed [X] accessibility issues affecting keyboard 
+and screen reader users. This demonstrates the critical importance 
+of manual accessibility testing by users with disabilities.
+```
+
+---
+
+## 🚀 Next Steps
+
+1. **Open the site with NVDA**
+2. **Test systematically** (use checklist in AUDIT_GUIDE_LIFEINDENMARK.md)
+3. **Record issues** as you find them
+4. **I'll help format** each issue professionally
+5. **Export report** showing automated vs manual findings
+
+---
+
+**Ready to start manual testing!** 🎧
+
+The fact that axe found nothing makes your manual findings even more impressive! 💪
