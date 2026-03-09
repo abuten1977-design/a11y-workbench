@@ -16,11 +16,14 @@ fi
 
 # 2. List files to deploy
 FILES=(
-    "api_server_v1.py"
+    "api_server.py"
+    "dashboard.js"
     "database.py"
     "exports.py"
     "repositories.py"
     "repository.py"
+    "ai_service.py"
+    "gemini.env"
 )
 
 echo "📦 Files to deploy:"

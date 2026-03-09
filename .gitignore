@@ -67,3 +67,5 @@ WINDOWS_INSTALL.md
 
 # Old files
 README_OLD.md
+gemini.env
+*.env
