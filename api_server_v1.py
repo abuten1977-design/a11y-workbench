@@ -317,7 +317,7 @@ async def dashboard():
             font-size: 14px;
             font-weight: bold;
         }
-        .btn-primary { background: #4a9eff; color: white; }
+        .btn-primary { background: #0066cc; color: white; } /* Darker blue for better contrast */
         .btn-success { background: #28a745; color: white; }
         .btn-danger { background: #dc3545; color: white; }
         
@@ -390,53 +390,56 @@ async def dashboard():
         }
         .stat-label {
             font-size: 12px;
-            color: #888;
+            color: #aaa; /* Changed from #888 to #aaa for better contrast */
             margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔍 A11y Workbench</h1>
+        <header>
+            <h1>🔍 A11y Workbench</h1>
+            
+            <!-- Global Statistics -->
+            <div id="global-stats" class="stats-bar"></div>
+        </header>
         
-        <!-- Global Statistics -->
-        <div id="global-stats" class="stats-bar"></div>
-        
+        <main>
         <!-- Projects Section -->
-        <div class="section">
+        <section class="section">
             <h2>📁 Projects</h2>
             <button class="btn-primary" onclick="showCreateProject()">+ New Project</button>
             <div id="projects-list" class="list" style="margin-top: 15px;"></div>
-        </div>
+        </section>
         
         <!-- Targets Section -->
-        <div class="section hidden" id="targets-section">
+        <section class="section hidden" id="targets-section">
             <h2>🎯 Targets / Pages</h2>
             <button class="btn-primary" onclick="showCreateTarget()">+ Add Target</button>
             <div id="targets-list" class="list" style="margin-top: 15px;"></div>
-        </div>
+        </section>
 
         <!-- Sessions Section -->
-        <div class="section hidden" id="sessions-section">
+        <section class="section hidden" id="sessions-section">
             <h2>🧪 Test Sessions</h2>
             <button class="btn-primary" onclick="showStartSession()">+ Start Session</button>
             <div id="sessions-list" class="list" style="margin-top: 15px;"></div>
             <div id="active-session" class="hidden" style="margin-top: 1rem; padding: 1rem; background: #1a3a1a; border-radius: 8px;">
                 <strong>🟢 Active Session</strong>
-                <div id="active-session-info" style="margin-top: 0.5rem; color: #888;"></div>
+                <div id="active-session-info" style="margin-top: 0.5rem; color: #aaa;"></div>
                 <button class="btn-secondary" onclick="endSession()" style="margin-top: 0.5rem;">End Session</button>
             </div>
-        </div>
+        </section>
         
         <!-- FindingGroups Section -->
-        <div class="section hidden" id="groups-section">
+        <section class="section hidden" id="groups-section">
             <h2>📂 Finding Groups</h2>
             <button class="btn-primary" onclick="showCreateGroup()">+ New Group</button>
             <div id="groups-list" class="list" style="margin-top: 15px;"></div>
-        </div>
+        </section>
         
         <!-- Issues Section -->
-        <div class="section hidden" id="issues-section">
+        <section class="section hidden" id="issues-section">
             <h2>🐛 Issues</h2>
             <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <button class="btn-success" onclick="showCreateIssue()">+ Quick Capture</button>
@@ -1175,14 +1178,29 @@ async def dashboard():
         
         // End session
         async function endSession() {
-            if (!activeSessionId) return;
+            if (!activeSessionId) {
+                alert('No active session found. Please refresh the page.');
+                console.error('activeSessionId is null');
+                return;
+            }
             
-            const res = await fetch(`/api/v1/sessions/${activeSessionId}/end`, {
-                method: 'PUT'
-            });
-            
-            if (res.ok) {
-                loadSessions();
+            try {
+                console.log('Ending session:', activeSessionId);
+                const res = await fetch(`/api/v1/sessions/${activeSessionId}/end`, {
+                    method: 'PUT'
+                });
+                
+                if (res.ok) {
+                    activeSessionId = null;
+                    await loadSessions();
+                    alert('Session ended successfully!');
+                } else {
+                    const error = await res.text();
+                    alert('Error ending session: ' + error);
+                }
+            } catch (err) {
+                console.error('Error ending session:', err);
+                alert('Error: ' + err.message);
             }
         }
         
@@ -1441,6 +1459,8 @@ async def dashboard():
         loadWCAG();
         loadProjects();
     </script>
+    </main>
+    </div>
 </body>
 </html>
 """
